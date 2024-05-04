@@ -1,6 +1,6 @@
-task_name = 'test_undisen'  # 给当前任务取一个自己能看懂的名字（只能用英文）
-city = 'PHO'  # 切换城市 PHO, NYC, SIN
-gpuId = "cuda:0"
+task_name = 'disen'  # 给当前任务取一个自己能看懂的名字（只能用英文）
+city = 'SIN'  # 切换城市 PHO, NYC, SIN
+gpuId = "cuda:2"
 
 LS_strategy = 'DoubleTrans'  # 长短期偏好学习策略 TransLSTM, DoubleTrans  TransLSTM现在表示短期用LSTM,长期用Transformer
 CL_strategy = 'Triplet'  # 对比学习策略 BPR, Triplet, NativeNCE, CosineNCE
@@ -9,7 +9,7 @@ enable_filatt = True  # 以注意力的形式融合长短期偏好
 
 enable_catpre_embedding = True  # 是否采用类别偏好模块
 
-enable_CL = False  # contrastive learning
+enable_CL = True  # contrastive learning
 
 lstm_layer_num = 1  # 控制lstm层
 
@@ -54,17 +54,17 @@ lr = 1e-5  # 1e-4 或 1e-5
 if city == 'PHO':
     epoch = 40  # 默认40
     embed_size = 100  # 论文参数 PHO 100，NYC 40，SIN 60
-    run_times = 5  # 整个模型训练的次数 默认为5 要可视化时为1
+    run_times = 1  # 整个模型训练的次数 默认为5 要可视化时为1
     drop_steps = 1
 elif city == 'NYC':
     epoch = 25
     embed_size = 40  # 20 40 60 80 100
-    run_times = 3  # 整个模型训练的次数 默认为3 要可视化时为1
+    run_times = 1  # 整个模型训练的次数 默认为3 要可视化时为1
     drop_steps = 2
 elif city == 'SIN':  # 默认60
     epoch = 25
     embed_size = 60  # 20 40 60 80 100
-    run_times = 3  # 整个模型训练的次数 默认为3 要可视化时为1
+    run_times = 1  # 整个模型训练的次数 默认为3 要可视化时为1
     drop_steps = 2
 else:
     raise Exception("City name error!")
@@ -108,3 +108,7 @@ else:
     output_file_name = output_file_name + "_NoCL"
 
 output_file_name = output_file_name + '_Embed' + str(embed_size) + f'_trans{tfp_layer_num}'
+
+long_term_preference_list = []
+short_term_preference_list = []
+user_preference_list = []

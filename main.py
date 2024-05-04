@@ -17,6 +17,15 @@ city = settings.city
 
 def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
     model_path = f"./results/{run_name}_model"
+    # 指定书写路径
+    # model_path = f"./results/undisen_cuda:0_PHO_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
+    # model_path = f"./results/disen_cuda:0_PHO_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
+
+    # model_path = f"./results/undisen_cuda:0_NYC_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
+    # model_path = f"./results/disen_cuda:0_NYC_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
+
+    # model_path = f"./results/undisen_cuda:0_SIN_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
+    # model_path = f"./results/disen_cuda:0_SIN_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
 
     log_path = f"./results/{run_name}_log"
     meta_path = f"./results/{run_name}_meta"
@@ -24,16 +33,16 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
     # 将 parameters 记录在 log 中
     print("parameters:", h_params)
 
-    if os.path.isfile(f'./results/{run_name}_model'):
-        try:
-            os.remove(f"./results/{run_name}_meta")
-            os.remove(f"./results/{run_name}_model")
-            os.remove(f"./results/{run_name}_log")
-        except OSError:
-            pass
-    file = open(log_path, 'wb')
-    pickle.dump(h_params, file)
-    file.close()
+    # if os.path.isfile(f'./results/{run_name}_model'):
+    #     try:
+    #         os.remove(f"./results/{run_name}_meta")
+    #         os.remove(f"./results/{run_name}_model")
+    #         os.remove(f"./results/{run_name}_log")
+    #     except OSError:
+    #         pass
+    # file = open(log_path, 'wb')
+    # pickle.dump(h_params, file)
+    # file.close()
 
     # construct model
     rec_model = TransRec(
@@ -50,8 +59,6 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
 
     rec_model = rec_model.to(device)
 
-    # continue with previous training
-    start_epoch = 0
     if os.path.isfile(model_path):
         rec_model.load_state_dict(torch.load(model_path))
         rec_model.train()
@@ -71,7 +78,7 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
         update_count = 0
         len_train_set = settings.curriculum_num * len(train_set)  # 在训练完多个 epoch 后 CL_weight 达到最大值
 
-    for epoch in range(start_epoch, h_params['epoch']):
+    for epoch in range(0, h_params['epoch']):
         begin_time = time.time()
         total_loss = 0.
         j = 0
@@ -104,6 +111,22 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
         # test
         # if i%10==0:
         recall, ndcg, map = test_TransRec(test_set, rec_model)
+
+        embedding_weights_1 = np.vstack([tensor.numpy() for tensor in settings.long_term_preference_list])
+        embedding_weights_2 = np.vstack([tensor.numpy() for tensor in settings.short_term_preference_list])
+
+        # preference_file = open(f"./results/PHO_Test_Undisen_2_preference", 'wb')
+        # preference_file = open(f"./results/PHO_disen_preference", 'wb')
+
+        # preference_file = open(f"./results/NYC_Test_Undisen_2_preference", 'wb')
+        # preference_file = open(f"./results/NYC_disen_preference", 'wb')
+
+        # preference_file = open(f"./results/SIN_Test_Undisen_2_preference", 'wb')
+        preference_file = open(f"./results/SIN_disen_preference", 'wb')
+
+        pickle.dump([embedding_weights_1, embedding_weights_2], preference_file)
+        preference_file.close()
+
         recalls[epoch] = recall
         ndcgs[epoch] = ndcg
         maps[epoch] = map
@@ -113,7 +136,7 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
         loss_dict[epoch] = avg_loss
         print(f"epoch: {epoch}; average loss: {avg_loss}, time taken: {int(time.time() - begin_time)}s")
         # save model
-        torch.save(rec_model.state_dict(), model_path)
+        # torch.save(rec_model.state_dict(), model_path)
         # save last epoch
         meta_file = open(meta_path, 'wb')
         pickle.dump(epoch, meta_file)
@@ -246,5 +269,5 @@ if __name__ == '__main__':
         print(f"sleep {t} seconds")
         time.sleep(t)
 
-        clear_log_meta_model(settings.output_file_name, run_num)
+        # clear_log_meta_model(settings.output_file_name, run_num)
     calculate_average(settings.output_file_name, settings.run_times)
