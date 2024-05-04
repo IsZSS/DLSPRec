@@ -1,0 +1,2 @@
+poi_id 对应于VenueId ，具体表现形式是4cda6665d54954811cdc35b2。
+
