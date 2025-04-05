@@ -29,14 +29,8 @@ def clear_log_meta_model(output_file_name, run_num):
 
 
 def calculate_average(output_file_name, run_count):
-    # 跨不同 epoch 计算最优指标
     csv_path = f"./results/{output_file_name}.csv"
     csv_calculate_average(output_file_name, csv_path, run_count)
-
-    # 依据同一 epoch 计算最优指标
-    if settings.enable_cal_epoch_metrics:
-        single_epoch_csv_path = f"./results/EPOCH_{output_file_name}.csv"
-        csv_calculate_average(output_file_name, single_epoch_csv_path, run_count)
 
 
 def csv_calculate_average(output_file_name, file_path, run_count):
@@ -159,6 +153,3 @@ def print_output_to_file(output_file_name, run_num):
     with open(csv_path, 'a', newline='', encoding='utf-8') as f:
         f.write('\n')
         f.write(','.join([str(x) for x in max_from_different_epochs]))
-
-    if settings.enable_cal_epoch_metrics:
-        print_max_single_epoch_to_csv(output_file_name, run_num)

@@ -8,7 +8,7 @@ import time
 import os
 
 import settings
-from TransRec import TransRec
+from DLSPRec import TransRec
 from results.data_reader import print_output_to_file, calculate_average, clear_log_meta_model
 
 device = settings.gpuId if torch.cuda.is_available() else 'cpu'
@@ -17,7 +17,6 @@ city = settings.city
 
 def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
     model_path = f"./results/{run_name}_model"
-
     log_path = f"./results/{run_name}_log"
     meta_path = f"./results/{run_name}_meta"
 
@@ -43,9 +42,7 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
         num_lstm_layers=h_params['lstm_layer_num'],
         num_heads=h_params['head_num'],
         forward_expansion=h_params['expansion'],
-        dropout_p=h_params['dropout'],
-        random_mask=h_params['random_mask'],
-        mask_prop=h_params['mask_prop']
+        dropout_p=h_params['dropout']
     )
 
     rec_model = rec_model.to(device)
@@ -111,7 +108,7 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
         # record avg loss
         avg_loss = total_loss / len(train_set)
         loss_dict[epoch] = avg_loss
-        print(f"epoch: {epoch}; average loss: {avg_loss}, time taken: {int(time.time() - begin_time)}s")
+        print(f"epoch: {epoch}; average train loss: {avg_loss}, time taken: {int(time.time() - begin_time)}s")
         # save model
         torch.save(rec_model.state_dict(), model_path)
         # save last epoch
@@ -150,22 +147,17 @@ def test_TransRec(test_set, rec_model, ks=[1, 5, 10]):
         return torch.sum(map) / labels.shape[0]
 
     preds, labels = [], []
-    total_test_loss = 0.
     for sample in test_set:
         sample_to_device = []
         for seq in sample:
             features = torch.tensor(seq).to(device)
             sample_to_device.append(features)
 
-        pred, label, test_loss = rec_model.predict(sample_to_device)
-        total_test_loss += test_loss.detach().cpu()
+        pred, label = rec_model.predict(sample_to_device)
         preds.append(pred.detach())
         labels.append(label.detach())
     preds = torch.stack(preds, dim=0)
     labels = torch.unsqueeze(torch.stack(labels, dim=0), 1)
-
-    avg_test_loss = total_test_loss / len(test_set)
-    print(f"average test loss: {avg_test_loss}")
 
     recalls, NDCGs, MAPs = {}, {}, {}
     for k in ks:
@@ -188,8 +180,6 @@ if __name__ == '__main__':
         'expansion': 4,
         'lr': settings.lr,
         'epoch': settings.epoch,
-        'random_mask': settings.enable_random_mask,
-        'mask_prop': settings.mask_prop,
         'loss_delta': 1e-3}
 
     # read training data
@@ -209,25 +199,25 @@ if __name__ == '__main__':
                   "hour": torch.tensor(len(meta["hour"])).to(device),
                   "day": torch.tensor(len(meta["day"])).to(device)}
 
-    print(f'current+{city}+_+{vocab_size["cat"]}+{vocab_size["day"]}')
+    print(f'current+{city}+_+{vocab_size["cat"]}')
     # adjust specific parameters for each city
     if city == 'SIN':
         h_params['embed_size'] = settings.embed_size
         h_params['tfp_layer_num'] = settings.tfp_layer_num
-        h_params['lstm_layer_num'] = settings.lstm_layer_num  # 1
+        h_params['lstm_layer_num'] = 1
         h_params['dropout'] = 0.2
         h_params['head_num'] = 1
     elif city == 'NYC':
         h_params['embed_size'] = settings.embed_size
         h_params['tfp_layer_num'] = settings.tfp_layer_num
-        h_params['lstm_layer_num'] = settings.lstm_layer_num  # 1
+        h_params['lstm_layer_num'] = 1
         h_params['dropout'] = 0.1
         h_params['head_num'] = 1
     elif city == 'PHO':
         h_params['embed_size'] = settings.embed_size
         h_params['tfp_layer_num'] = settings.tfp_layer_num
-        h_params['lstm_layer_num'] = settings.lstm_layer_num  # 1
-        h_params['dropout'] = 0.2  # 0.2 默认
+        h_params['lstm_layer_num'] = 1
+        h_params['dropout'] = 0.2
         h_params['head_num'] = 1
 
     # create output folder
