@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 task_name = 'ten_runtimes_SIN'  # 给当前任务取一个自己能看懂的名字（只能用英文）
-=======
-task_name = 'disen'  # 给当前任务取一个自己能看懂的名字（只能用英文）
->>>>>>> 41c5ebb2608b5923fef7c3ac9737a1e70cd3e66d
 city = 'SIN'  # 切换城市 PHO, NYC, SIN
 gpuId = "cuda:2"
 
@@ -59,29 +55,17 @@ lr = 1e-5  #
 if city == 'PHO':
     epoch = 40 # 默认40
     embed_size = 100  # 论文参数 PHO 100，NYC 40，SIN 60
-<<<<<<< HEAD
     run_times = 10  # 整个模型训练的次数 默认为5 要可视化时为1
-=======
-    run_times = 1  # 整个模型训练的次数 默认为5 要可视化时为1
->>>>>>> 41c5ebb2608b5923fef7c3ac9737a1e70cd3e66d
     drop_steps = 1
 elif city == 'NYC':
     epoch = 25
     embed_size = 40  # 20 40 60 80 100
-<<<<<<< HEAD
     run_times = 10  # 整个模型训练的次数 默认为3 要可视化时为1
-=======
-    run_times = 1  # 整个模型训练的次数 默认为3 要可视化时为1
->>>>>>> 41c5ebb2608b5923fef7c3ac9737a1e70cd3e66d
     drop_steps = 2
 elif city == 'SIN':  # 默认60
     epoch = 25
     embed_size = 60  # 20 40 60 80 100
-<<<<<<< HEAD
     run_times = 10  # 整个模型训练的次数 默认为3 要可视化时为1
-=======
-    run_times = 1  # 整个模型训练的次数 默认为3 要可视化时为1
->>>>>>> 41c5ebb2608b5923fef7c3ac9737a1e70cd3e66d
     drop_steps = 2
 else:
     raise Exception("City name error!")
@@ -127,7 +111,3 @@ else:
     output_file_name = output_file_name + "_NoCL"
 
 output_file_name = output_file_name + '_Embed' + str(embed_size) + f'_trans{tfp_layer_num}'
-
-long_term_preference_list = []
-short_term_preference_list = []
-user_preference_list = []
