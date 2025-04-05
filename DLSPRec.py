@@ -11,11 +11,10 @@ import copy
 
 import settings
 
-device = settings.gpuId if torch.cuda.is_available() else 'cpu'
-
+from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-from sklearn.manifold import TSNE
+device = settings.gpuId if torch.cuda.is_available() else 'cpu'
 
 
 # 对每个签到进行嵌入
@@ -426,7 +425,7 @@ class TransRec(nn.Module):
         else:
             raise NotImplementedError
 
-    def forward(self, sample):
+    def forward(self, sample, is_train=True):
         # process input sample
         # [(seq1)[((features)[poi_seq],[cat_seq],[user_seq],[hour_seq],[day_seq])],[(seq2)],...]
         long_term_sequences = sample[:-1]
@@ -546,6 +545,11 @@ class TransRec(nn.Module):
             CL_loss = self.cal_CL_loss(short_term_prefer, long_term_prefer,
                                        short_term_proxy, long_term_proxy)
 
+        if not is_train:  # 将测试集的长短期偏好存储起来
+            # 这两句话无论放在 CL_loss 前面还是后面都是一样的结果
+            settings.long_term_preference_list.append(long_term_prefer.cpu().detach())
+            settings.short_term_preference_list.append(short_term_prefer.cpu().detach())
+
         # final output
         if settings.enable_alpha:
             # region fusion long and short like CLSR
@@ -607,7 +611,11 @@ class TransRec(nn.Module):
         return loss, output
 
     def predict(self, sample):
+<<<<<<< HEAD:DLSPRec.py
         _, pred_raw = self.forward(sample)
+=======
+        test_loss, pred_raw = self.forward(sample, is_train=False)
+>>>>>>> 41c5ebb2608b5923fef7c3ac9737a1e70cd3e66d:TransRec.py
         ranking = torch.sort(pred_raw, descending=True)[1]
 
         if settings.enable_drop:
