@@ -17,35 +17,23 @@ city = settings.city
 
 def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
     model_path = f"./results/{run_name}_model"
-<<<<<<< HEAD
-=======
-    # 指定书写路径
-    # model_path = f"./results/undisen_cuda:0_PHO_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
-    # model_path = f"./results/disen_cuda:0_PHO_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
 
-    # model_path = f"./results/undisen_cuda:0_NYC_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
-    # model_path = f"./results/disen_cuda:0_NYC_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
-
-    # model_path = f"./results/undisen_cuda:0_SIN_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
-    # model_path = f"./results/disen_cuda:0_SIN_DoubleTrans_Epoch40_LR1e-05_NoDrop_finall_att_catpre_lstm1_Mask0.1_NoCL_Embed100_trans1 1_model"
-
->>>>>>> 41c5ebb2608b5923fef7c3ac9737a1e70cd3e66d
     log_path = f"./results/{run_name}_log"
     meta_path = f"./results/{run_name}_meta"
 
     # 将 parameters 记录在 log 中
     print("parameters:", h_params)
 
-    # if os.path.isfile(f'./results/{run_name}_model'):
-    #     try:
-    #         os.remove(f"./results/{run_name}_meta")
-    #         os.remove(f"./results/{run_name}_model")
-    #         os.remove(f"./results/{run_name}_log")
-    #     except OSError:
-    #         pass
-    # file = open(log_path, 'wb')
-    # pickle.dump(h_params, file)
-    # file.close()
+    if os.path.isfile(f'./results/{run_name}_model'):
+        try:
+            os.remove(f"./results/{run_name}_meta")
+            os.remove(f"./results/{run_name}_model")
+            os.remove(f"./results/{run_name}_log")
+        except OSError:
+            pass
+    file = open(log_path, 'wb')
+    pickle.dump(h_params, file)
+    file.close()
 
     # construct model
     rec_model = TransRec(
@@ -112,21 +100,6 @@ def train_TransRec(train_set, test_set, h_params, vocab_size, device, run_name):
         # test
         # if i%10==0:
         recall, ndcg, map = test_TransRec(test_set, rec_model)
-
-        embedding_weights_1 = np.vstack([tensor.numpy() for tensor in settings.long_term_preference_list])
-        embedding_weights_2 = np.vstack([tensor.numpy() for tensor in settings.short_term_preference_list])
-
-        # preference_file = open(f"./results/PHO_Test_Undisen_2_preference", 'wb')
-        # preference_file = open(f"./results/PHO_disen_preference", 'wb')
-
-        # preference_file = open(f"./results/NYC_Test_Undisen_2_preference", 'wb')
-        # preference_file = open(f"./results/NYC_disen_preference", 'wb')
-
-        # preference_file = open(f"./results/SIN_Test_Undisen_2_preference", 'wb')
-        preference_file = open(f"./results/SIN_disen_preference", 'wb')
-
-        pickle.dump([embedding_weights_1, embedding_weights_2], preference_file)
-        preference_file.close()
 
         recalls[epoch] = recall
         ndcgs[epoch] = ndcg
